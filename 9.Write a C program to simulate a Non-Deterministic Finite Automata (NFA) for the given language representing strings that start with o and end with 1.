@@ -1,0 +1,92 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+
+#define MAX_STATES 100
+#define SYMBOLS 2 // 'o' (0) and '1' (1)
+
+// NFA transition function
+int nfa[MAX_STATES][SYMBOLS][MAX_STATES];
+int num_states;
+
+// Function to perform epsilon-closure for a set of states
+void epsilon_closure(int state, bool visited[], bool closure[]) {
+    visited[state] = true;
+    closure[state] = true;
+
+    for (int i = 0; i < num_states; i++) {
+        if (nfa[state][SYMBOLS - 1][i] == 1 && !visited[i]) {
+            epsilon_closure(i, visited, closure);
+        }
+    }
+}
+
+// Function to simulate the NFA
+bool simulate_nfa(const char *str) {
+    bool closure[MAX_STATES] = {false};
+    bool visited[MAX_STATES] = {false};
+
+    // Start with the epsilon-closure of state 0
+    epsilon_closure(0, visited, closure);
+
+    int length = strlen(str);
+    for (int i = 0; i < length; i++) {
+        bool new_closure[MAX_STATES] = {false};
+        memset(visited, false, sizeof(visited));
+
+        int symbol;
+        if (str[i] == 'o')
+            symbol = 0;
+        else if (str[i] == '1')
+            symbol = 1;
+        else
+            return false; // Invalid input character
+
+        for (int j = 0; j < num_states; j++) {
+            if (closure[j]) {
+                for (int k = 0; k < num_states; k++) {
+                    if (nfa[j][symbol][k] == 1) {
+                        epsilon_closure(k, visited, new_closure);
+                    }
+                }
+            }
+        }
+
+        memcpy(closure, new_closure, sizeof(closure));
+    }
+
+    // Check if the final state is in the closure set
+    for (int i = 0; i < num_states; i++) {
+        if (closure[i] && nfa[i][SYMBOLS - 1][num_states - 1] == 1) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+int main() {
+    printf("Enter the number of states in the NFA: ");
+    scanf("%d", &num_states);
+
+    printf("Enter the transition table for NFA (0 for no transition, 1 for transition):\n");
+    for (int i = 0; i < num_states; i++) {
+        for (int j = 0; j < SYMBOLS; j++) {
+            for (int k = 0; k < num_states; k++) {
+                scanf("%d", &nfa[i][j][k]);
+            }
+        }
+    }
+
+    char input[100];
+    printf("Enter a string: ");
+    scanf("%s", input);
+
+    if (simulate_nfa(input)) {
+        printf("Accepted\n");
+    } else {
+        printf("Rejected\n");
+    }
+
+    return 0;
+}
