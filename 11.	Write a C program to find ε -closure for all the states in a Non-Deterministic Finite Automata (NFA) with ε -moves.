@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX_STATES 100
+
+int n_states;           // Total number of states in the NFA
+bool transitions[MAX_STATES][MAX_STATES]; // NFA transition table with ε-moves
+bool visited[MAX_STATES]; // To keep track of visited states during DFS
+
+// Function to perform Depth-First Search (DFS)
+void dfs(int state) {
+    visited[state] = true;
+
+    // Explore all possible ε-transitions from the current state
+    for (int i = 0; i < n_states; i++) {
+        if (transitions[state][i] && !visited[i]) {
+            dfs(i);
+        }
+    }
+}
+
+// Function to find ε-closure for a given state
+void epsilonClosure(int state) {
+    for (int i = 0; i < n_states; i++) {
+        visited[i] = false;
+    }
+
+    dfs(state);
+
+    printf("ε-closure(q%d): ", state);
+    for (int i = 0; i < n_states; i++) {
+        if (visited[i]) {
+            printf("q%d ", i);
+        }
+    }
+    printf("\n");
+}
+
+int main() {
+    // Example NFA transition table with ε-moves
+    n_states = 4;
+    transitions[0][1] = true; // ε-transition from q0 to q1
+    transitions[0][2] = true; // ε-transition from q0 to q2
+    transitions[1][1] = true; // ε-transition from q1 to q1
+    transitions[1][2] = true; // ε-transition from q1 to q2
+    transitions[2][3] = true; // ε-transition from q2 to q3
+
+    // Find ε-closure for all states in the NFA
+    for (int i = 0; i < n_states; i++) {
+        epsilonClosure(i);
+    }
+
+    return 0;
+}
