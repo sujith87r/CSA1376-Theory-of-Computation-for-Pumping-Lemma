@@ -1,0 +1,52 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX_STATES 100
+
+// NFA transition function
+int nfa[MAX_STATES][MAX_STATES];
+int num_states;
+
+// Function to perform DFS
+void dfs(int state, bool visited[]) {
+    visited[state] = true;
+
+    for (int i = 0; i < num_states; i++) {
+        if (nfa[state][i] == 1 && !visited[i]) {
+            dfs(i, visited);
+        }
+    }
+}
+
+// Function to find ε-closure for a state
+void epsilon_closure(int state, bool visited[]) {
+    visited[state] = true;
+
+    printf("ε-closure(q%d): q%d ", state, state);
+    for (int i = 0; i < num_states; i++) {
+        if (nfa[state][i] == 1 && !visited[i]) {
+            epsilon_closure(i, visited);
+        }
+    }
+}
+
+int main() {
+    printf("Enter the number of states in the NFA: ");
+    scanf("%d", &num_states);
+
+    printf("Enter the transition table for NFA (0 for no transition, 1 for ε-transition):\n");
+    for (int i = 0; i < num_states; i++) {
+        for (int j = 0; j < num_states; j++) {
+            scanf("%d", &nfa[i][j]);
+        }
+    }
+
+    // Find ε-closure for all states
+    for (int i = 0; i < num_states; i++) {
+        bool visited[MAX_STATES] = {false};
+        epsilon_closure(i, visited);
+        printf("\n");
+    }
+
+    return 0;
+}
